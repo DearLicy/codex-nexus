@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use codex_tool_core::discovery::{self, CodexSessionRecord, QuarantineResult, WorkspaceFileRecord};
 use codex_tool_core::{
     AccountPool, ArtifactRecord, ArtifactScanner, ProviderAccount, RoutePolicy, Router,
 };
@@ -7,6 +8,24 @@ use codex_tool_core::{
 #[tauri::command]
 fn health() -> serde_json::Value {
     serde_json::json!({ "ok": true, "service": "codex-nexus" })
+}
+
+#[tauri::command]
+fn list_codex_sessions() -> Result<Vec<CodexSessionRecord>, String> {
+    discovery::list_codex_sessions().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn list_workspace_files(root: Option<String>) -> Result<Vec<WorkspaceFileRecord>, String> {
+    match root.filter(|value| !value.trim().is_empty()) {
+        Some(root) => discovery::list_workspace_files(root).map_err(|error| error.to_string()),
+        None => discovery::list_default_workspace_files().map_err(|error| error.to_string()),
+    }
+}
+
+#[tauri::command]
+fn quarantine_path(path: String) -> Result<QuarantineResult, String> {
+    discovery::quarantine_path(path).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -58,6 +77,9 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             health,
+            list_codex_sessions,
+            list_workspace_files,
+            quarantine_path,
             scan_artifacts,
             quarantine_artifact,
             restore_artifact,

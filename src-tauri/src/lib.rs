@@ -4,6 +4,7 @@
 //! Tauri commands, a CLI, or a test process without requiring a WebView.
 
 pub mod artifacts;
+pub mod discovery;
 pub mod image_pool;
 pub mod models;
 pub mod providers;
@@ -12,6 +13,7 @@ pub mod secrets;
 pub mod store;
 
 pub use artifacts::{ArtifactError, ArtifactScanner, ScanConfig};
+pub use discovery::{CodexSessionRecord, DiscoveryError, QuarantineResult, WorkspaceFileRecord};
 pub use image_pool::{ImageAssignment, ImagePool, ImagePoolMember};
 pub use models::{
     AccountPool, ArtifactRecord, ArtifactStatus, ImageJob, JobStatus, ProviderAccount, RoutePolicy,

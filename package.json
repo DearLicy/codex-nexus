@@ -17,6 +17,7 @@
     "image-mcp": "node packages/image-mcp/server.mjs"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.12.1",
     "@vitejs/plugin-react": "latest",
     "lucide-react": "latest",
     "react": "latest",
