@@ -18,7 +18,13 @@
         "height": 920,
         "minWidth": 1120,
         "minHeight": 720,
-        "resizable": true
+        "resizable": true,
+        "center": true,
+        "focus": true,
+        "decorations": true,
+        "shadow": true,
+        "titleBarStyle": "Transparent",
+        "hiddenTitle": false
       }
     ],
     "security": { "csp": null }
