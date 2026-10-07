@@ -1,0 +1,31 @@
+{
+  "apiKeys": [
+    {
+      "id": "codex-local",
+      "key": "replace-with-a-generated-key",
+      "allowedModels": ["openrouter/deepseek-v4"],
+      "routeNamespaces": ["openrouter"]
+    }
+  ],
+  "routes": [
+    {
+      "id": "openrouter-default",
+      "namespace": "openrouter",
+      "providerId": "openrouter",
+      "protocol": "chat",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "models": ["deepseek-v4", "qwen3-coder"],
+      "routingStrategy": "quota-aware",
+      "maxRetries": 2,
+      "default": true
+    }
+  ],
+  "accounts": [
+    {
+      "id": "openrouter-account",
+      "providerId": "openrouter",
+      "quotaRemaining": 100,
+      "apiKey": "stored-in-keychain-at-runtime"
+    }
+  ]
+}
