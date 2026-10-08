@@ -1,6 +1,6 @@
 # Third-party notices
 
-Codex Nexus may distribute code from open-source packages in its frontend and Tauri/Rust layers. Each dependency remains under its own license. Package managers and lockfiles are the source of truth for the exact versions resolved in a build.
+Codex Nexus may distribute code from open-source packages in its Slint native shell, Rust core, and optional Node sidecars. Each dependency remains under its own license. Cargo and pnpm lockfiles are the source of truth for the exact versions resolved in a build.
 
 ## How notices are maintained
 

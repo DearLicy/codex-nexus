@@ -1,0 +1,13 @@
+[package]
+name = "codex-nexus-native"
+version = "0.1.0"
+edition = "2021"
+description = "Codex Nexus native desktop shell built with Slint"
+license = "MIT"
+
+[dependencies]
+slint = "1.18.1"
+codex-tool-core = { package = "codex-nexus", path = "../src-tauri" }
+
+[build-dependencies]
+slint-build = "1.18.1"

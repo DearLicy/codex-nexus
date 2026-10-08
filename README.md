@@ -13,34 +13,35 @@ Codex Nexus 是一个面向 Codex 工作流的本地优先第三方工具。它�
 
 ## 快速开始
 
-Codex Nexus 是 Tauri 桌面应用，启动后在独立的原生窗口中运行，默认界面语言为简体中文。需要 Node.js 20+、pnpm 9+；开发和打包桌面应用还需要 Rust stable 与 Tauri 的系统依赖。
+Codex Nexus 是由 Rust 和 Slint 编译的原生桌面应用。主程序不包含 WebView、HTML 页面、React 或浏览器路由，默认界面语言为简体中文。桌面应用只需要 Rust stable 和当前平台的图形工具链；Node.js/pnpm 仅用于本地聚合网关和图片 MCP 的 JavaScript 服务。
 
-安装依赖并启动桌面开发窗口：
+启动原生桌面窗口：
 
 ```bash
-pnpm install
-pnpm dev:desktop
+cargo run --manifest-path native/Cargo.toml
 ```
 
-`pnpm dev` 只启动 Vite 前端预览，适合调试界面，不代表最终交付形态。真正的桌面开发入口是 `pnpm dev:desktop`，它会启动 Tauri 宿主、Rust 命令和本地能力。
+等价的 pnpm 命令是 `pnpm dev`。窗口中的会话、文件数量和占用空间直接从 Rust 核心扫描 `CODEX_HOME`，不会使用演示数组。
 
 构建可分发的桌面安装包：
 
 ```bash
-pnpm build:desktop
+cargo build --release --manifest-path native/Cargo.toml
 ```
 
-打包结果位于 `src-tauri/target/release/bundle/`，具体格式由当前平台决定（macOS 通常为 `.app`/`.dmg`，Windows 通常为 `.msi`/`.exe`）。只构建前端静态资源时使用 `pnpm build`。
+原生可执行文件位于 `native/target/release/codex-nexus-native`（Windows 为 `.exe`）。应用不再生成 `dist/`、Tauri bundle 或 HTML 预览；macOS `.app`、DMG 和 Windows 安装包由发布工作流使用各平台原生打包工具生成。
+
+macOS 本地打包使用 `pnpm package:macos`，会创建 `.app` 并在 macOS 上生成 DMG；设置 `CODEX_NEXUS_SIGNING_IDENTITY` 后会额外执行签名。Windows 本地打包使用 `pnpm package:windows`，会创建包含 `.exe` 和 README 的 ZIP。正式发布仍需在目标平台配置签名、 notarization 或 Windows 代码签名。
 
 在提交前运行完整检查：
 
 ```bash
 pnpm test
-pnpm build
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path native/Cargo.toml
 ```
 
-如果本地环境尚未安装 pnpm，可以使用 Corepack：
+如果本地环境尚未安装 Rust，可以使用 rustup 安装 stable 工具链。需要运行网关或图片 MCP 时，如果本地环境尚未安装 pnpm，可以使用 Corepack：
 
 ```bash
 corepack enable
@@ -50,8 +51,8 @@ corepack prepare pnpm@latest --activate
 ## 仓库结构
 
 ```text
-src/                 前端界面与共享类型
-src-tauri/           Tauri 宿主、Rust 命令和本地能力
+native/              Slint 原生桌面应用、UI 和平台打包入口
+src-tauri/           可复用 Rust 核心、扫描器、路由和安全存储
 packages/gateway/    本地回环聚合网关
 packages/image-mcp/  面向图片能力的 MCP stdio 服务
 docs/                架构及维护文档
@@ -80,27 +81,26 @@ Codex Nexus is a local-first third-party companion for Codex workflows. It bring
 
 ### Getting started
 
-Codex Nexus is a Tauri desktop application. Its default UI language is Simplified Chinese and it runs in a native application window. Install Node.js 20+, pnpm 9+, Rust stable, and the platform dependencies required by Tauri:
+Codex Nexus is a native desktop application compiled from Rust and Slint. The main binary has no WebView, HTML page, React shell, or browser router, and its default UI language is Simplified Chinese. Install Rust stable and the platform graphics toolchain. Node.js/pnpm is only needed for the optional gateway and image MCP services:
 
 ```bash
-pnpm install
-pnpm dev:desktop
+cargo run --manifest-path native/Cargo.toml
 ```
 
-`pnpm dev` starts only the Vite browser preview for frontend work. Use `pnpm dev:desktop` for the actual desktop app and `pnpm build:desktop` to produce platform installers under `src-tauri/target/release/bundle/`.
+`pnpm dev` is an alias for the same native command. Use `cargo build --release --manifest-path native/Cargo.toml` to create the release binary. Platform installers are produced by the release workflow with native packaging tools.
 
 Run the checks used before a pull request:
 
 ```bash
 pnpm test
-pnpm build
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo check --manifest-path native/Cargo.toml
 ```
 
 ### Layout
 
-- `src/` contains the frontend and shared types.
-- `src-tauri/` contains the Tauri host, Rust commands, and local integrations.
+- `native/` contains the Slint native desktop application and UI.
+- `src-tauri/` contains the reusable Rust core, scanners, routing, and secure storage.
 - `packages/gateway/` contains the local loopback aggregation gateway.
 - `packages/image-mcp/` contains the image-focused MCP stdio service.
 - `docs/` contains architecture and maintenance notes.

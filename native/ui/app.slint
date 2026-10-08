@@ -1,0 +1,284 @@
+import { VerticalBox, HorizontalBox } from "std-widgets.slint";
+
+component NavRow inherits Rectangle {
+    in property <string> label;
+    in property <string> glyph;
+    in property <bool> selected;
+    callback clicked();
+    height: 34px;
+    border-radius: 6px;
+    background: selected ? #25224b : transparent;
+    HorizontalBox {
+        padding: 0px;
+        spacing: 10px;
+        Text { text: glyph; color: selected ? #b5aaff : #8c94a5; font-size: 14px; width: 18px; horizontal-alignment: center; vertical-alignment: center; }
+        Text { text: label; color: selected ? #f4f5f7 : #9da5b5; font-size: 12px; vertical-alignment: center; }
+    }
+    TouchArea { clicked => { root.clicked(); } }
+}
+
+component StatCard inherits Rectangle {
+    in property <string> title;
+    in property <string> value;
+    in property <string> detail;
+    horizontal-stretch: 1;
+    height: 92px;
+    border-radius: 8px;
+    background: #11141c;
+    border-width: 1px;
+    border-color: #252c3a;
+    VerticalBox {
+        padding: 14px;
+        spacing: 4px;
+        Text { text: title; color: #7b8495; font-size: 11px; }
+        Text { text: value; color: #f2f3f5; font-size: 22px; font-weight: 700; }
+        Text { text: detail; color: #697183; font-size: 10px; }
+    }
+}
+
+export component AppWindow inherits Window {
+    title: "Codex Nexus";
+    width: 1240px;
+    height: 780px;
+    background: #0b0d12;
+
+    in-out property <string> active-page: "总览";
+    in-out property <string> runtime-status: "正在读取本机 Codex 数据…";
+    in-out property <string> workspace-root: "等待扫描";
+    in-out property <string> session-count: "0";
+    in-out property <string> file-count: "0";
+    in-out property <string> storage-size: "0 B";
+    in-out property <string> session-preview: "暂无本机会话";
+    in-out property <string> file-preview: "暂无受管文件";
+    callback nav-clicked(string);
+    callback refresh-data();
+
+    Rectangle {
+        background: #0b0d12;
+
+        HorizontalBox {
+            spacing: 0px;
+
+            // A narrow, desktop-style navigation rail. It stays functional
+            // when the content view is empty and does not depend on a web
+            // router or browser location.
+            Rectangle {
+                width: 232px;
+                background: #10131b;
+                border-width: 1px;
+                border-color: #222735;
+
+                VerticalBox {
+                    padding: 14px;
+                    spacing: 18px;
+
+                    HorizontalBox {
+                        height: 42px;
+                        spacing: 10px;
+                        Rectangle {
+                            width: 34px;
+                            height: 34px;
+                            border-radius: 9px;
+                            background: #6556d9;
+                            Text {
+                                text: "N";
+                                color: #ffffff;
+                                font-size: 18px;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+                        VerticalBox {
+                            spacing: 1px;
+                            Text { text: "Codex Nexus"; color: #f4f5f7; font-size: 15px; font-weight: 700; }
+                            Text { text: "本机工作台"; color: #878e9d; font-size: 11px; }
+                        }
+                    }
+
+                    Rectangle { height: 1px; background: #222735; }
+
+                    VerticalBox {
+                        spacing: 3px;
+                        Text { text: "工作区"; color: #697183; font-size: 11px; font-weight: 700; }
+
+                        NavRow { label: "总览"; glyph: "⌂"; selected: root.active-page == "总览"; clicked => { root.nav-clicked("总览"); } }
+                        NavRow { label: "历史会话"; glyph: "▤"; selected: root.active-page == "历史会话"; clicked => { root.nav-clicked("历史会话"); } }
+                        NavRow { label: "文件管理"; glyph: "□"; selected: root.active-page == "文件管理"; clicked => { root.nav-clicked("文件管理"); } }
+                    }
+
+                    VerticalBox {
+                        spacing: 3px;
+                        Text { text: "控制中心"; color: #697183; font-size: 11px; font-weight: 700; }
+                        NavRow { label: "供应商"; glyph: "↯"; selected: root.active-page == "供应商"; clicked => { root.nav-clicked("供应商"); } }
+                        NavRow { label: "账号池"; glyph: "◎"; selected: root.active-page == "账号池"; clicked => { root.nav-clicked("账号池"); } }
+                        NavRow { label: "生图工作台"; glyph: "▧"; selected: root.active-page == "生图工作台"; clicked => { root.nav-clicked("生图工作台"); } }
+                    }
+
+                    VerticalBox {
+                        spacing: 3px;
+                        Text { text: "扩展能力"; color: #697183; font-size: 11px; font-weight: 700; }
+                        NavRow { label: "技能"; glyph: "✧"; selected: root.active-page == "技能"; clicked => { root.nav-clicked("技能"); } }
+                        NavRow { label: "提示词"; glyph: "≡"; selected: root.active-page == "提示词"; clicked => { root.nav-clicked("提示词"); } }
+                        NavRow { label: "MCP 服务"; glyph: "⌘"; selected: root.active-page == "MCP 服务"; clicked => { root.nav-clicked("MCP 服务"); } }
+                    }
+
+                    Rectangle { vertical-stretch: 1; }
+
+                    Rectangle {
+                        height: 48px;
+                        border-radius: 9px;
+                        background: #151923;
+                        border-width: 1px;
+                        border-color: #292f3d;
+                        HorizontalBox {
+                            padding: 8px;
+                            spacing: 8px;
+                            Rectangle { width: 28px; height: 28px; border-radius: 14px; background: #d88172; Text { text: "D"; color: #ffffff; horizontal-alignment: center; vertical-alignment: center; font-size: 12px; font-weight: 700; } }
+                            VerticalBox { spacing: 1px; Text { text: "本地账户"; color: #e5e7eb; font-size: 12px; } Text { text: "离线优先"; color: #7d8493; font-size: 10px; } }
+                        }
+                    }
+                }
+            }
+
+            VerticalBox {
+                spacing: 0px;
+
+                // Native-looking toolbar: content is bounded to the window,
+                // with no browser URL bar, body margin, or marketing hero.
+                Rectangle {
+                    height: 58px;
+                    background: #0d1017;
+                    border-width: 1px;
+                    border-color: #222735;
+                    HorizontalBox {
+                        padding: 0px;
+                        spacing: 14px;
+                        Text { text: root.active-page; color: #f2f3f5; font-size: 15px; font-weight: 700; vertical-alignment: center; }
+                        Rectangle { horizontal-stretch: 1; }
+                        Rectangle {
+                            width: 120px;
+                            height: 30px;
+                            border-radius: 7px;
+                            background: #151923;
+                            border-width: 1px;
+                            border-color: #2b3241;
+                            Text { text: "⌘ K  搜索"; color: #858d9d; font-size: 11px; horizontal-alignment: center; vertical-alignment: center; }
+                        }
+                        Rectangle {
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 7px;
+                            background: #151923;
+                            Text { text: "?"; color: #a5adbd; font-size: 14px; horizontal-alignment: center; vertical-alignment: center; }
+                            TouchArea { clicked => { root.nav-clicked("设置"); } }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    background: #0b0d12;
+                    VerticalBox {
+                        padding: 30px;
+                        spacing: 18px;
+
+                        HorizontalBox {
+                            spacing: 12px;
+                            VerticalBox {
+                                spacing: 3px;
+                                Text { text: "本机 Codex"; color: #788092; font-size: 12px; }
+                                Text { text: root.active-page; color: #f4f5f7; font-size: 27px; font-weight: 700; }
+                                Text { text: root.runtime-status; color: #9aa2b2; font-size: 12px; }
+                            }
+                            Rectangle { horizontal-stretch: 1; }
+                            Rectangle {
+                                width: 92px;
+                                height: 32px;
+                                border-radius: 7px;
+                                background: #6556d9;
+                                Text { text: "↻  刷新"; color: #ffffff; font-size: 12px; horizontal-alignment: center; vertical-alignment: center; }
+                                TouchArea { clicked => { root.refresh-data(); } }
+                            }
+                        }
+
+                        Rectangle {
+                            height: 38px;
+                            border-radius: 7px;
+                            background: #111720;
+                            border-width: 1px;
+                            border-color: #263240;
+                            HorizontalBox {
+                                padding: 0px;
+                                spacing: 8px;
+                                Rectangle { width: 7px; height: 7px; border-radius: 4px; background: #5bc99b; }
+                                Text { text: root.workspace-root; color: #a9e1c8; font-size: 11px; vertical-alignment: center; }
+                            }
+                        }
+
+                        // The first row is deliberately small and factual:
+                        // counts come from Rust discovery, while empty states
+                        // explain what can be configured next.
+                        HorizontalBox {
+                            spacing: 12px;
+                            StatCard { title: "本机会话"; value: root.session-count; detail: "来自 ~/.codex"; }
+                            StatCard { title: "受管文件"; value: root.file-count; detail: root.storage-size; }
+                            StatCard { title: "本地运行时"; value: "Slint"; detail: "原生渲染，无 WebView"; }
+                        }
+
+                        HorizontalBox {
+                            spacing: 12px;
+                            Rectangle {
+                                horizontal-stretch: 2;
+                                min-height: 220px;
+                                border-radius: 9px;
+                                background: #11141c;
+                                border-width: 1px;
+                                border-color: #252c3a;
+                                VerticalBox {
+                                    padding: 18px;
+                                    spacing: 12px;
+                                    HorizontalBox { Text { text: "历史会话"; color: #e6e8ed; font-size: 14px; font-weight: 700; } Rectangle { horizontal-stretch: 1; } Text { text: "本地索引"; color: #788092; font-size: 11px; } }
+                                    Rectangle { height: 1px; background: #252c3a; }
+                                    Text { text: root.session-preview; color: #a4acbc; font-size: 12px; wrap: word-wrap; vertical-alignment: center; }
+                                    Rectangle { vertical-stretch: 1; }
+                                    Text { text: "会话和文件读取由 Rust 核心完成。"; color: #6f7788; font-size: 11px; }
+                                }
+                            }
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                min-height: 220px;
+                                border-radius: 9px;
+                                background: #11141c;
+                                border-width: 1px;
+                                border-color: #252c3a;
+                                VerticalBox {
+                                    padding: 18px;
+                                    spacing: 12px;
+                                    HorizontalBox { Text { text: "文件占用"; color: #e6e8ed; font-size: 14px; font-weight: 700; } Rectangle { horizontal-stretch: 1; } Text { text: root.storage-size; color: #b5bdfd; font-size: 11px; } }
+                                    Rectangle { height: 1px; background: #252c3a; }
+                                    Text { text: root.file-preview; color: #a4acbc; font-size: 12px; wrap: word-wrap; vertical-alignment: center; }
+                                    Rectangle { vertical-stretch: 1; }
+                                    Text { text: "当前显示 Codex 受管目录的实际扫描结果。"; color: #6f7788; font-size: 11px; }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            vertical-stretch: 1;
+                            min-height: 116px;
+                            border-radius: 9px;
+                            background: #10131a;
+                            border-width: 1px;
+                            border-color: #252c3a;
+                            VerticalBox {
+                                padding: 18px;
+                                spacing: 8px;
+                                Text { text: "还没有配置供应商"; color: #e6e8ed; font-size: 14px; font-weight: 700; }
+                                Text { text: "在供应商页面添加 API 或 OAuth 账号后，模型路由和账号池会显示在这里。"; color: #858d9d; font-size: 12px; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

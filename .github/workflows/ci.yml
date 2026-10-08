@@ -13,51 +13,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  frontend:
-    name: Frontend checks
+  native:
+    name: Native Rust and Slint checks
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-      - name: Install dependencies
-        run: |
-          if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile
-          else
-            pnpm install --no-frozen-lockfile
-          fi
-      - name: Check formatting and lint
-        run: |
-          pnpm run format:check --if-present
-          pnpm run lint --if-present
-      - name: Test
-        run: pnpm test --if-present
-      - name: Build
-        run: pnpm build
-
-  rust:
-    name: Rust checks
-    runs-on: ubuntu-latest
-    if: ${{ hashFiles('src-tauri/Cargo.toml') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-      - name: Check formatting
-        working-directory: src-tauri
-        run: cargo fmt --all -- --check
-      - name: Check compilation
-        working-directory: src-tauri
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Format core and desktop crates
         run: |
-          if [ -f Cargo.lock ]; then
-            cargo check --locked
-          else
-            cargo check
-          fi
+          cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check
+          cargo fmt --manifest-path native/Cargo.toml --all -- --check
+      - name: Test core crate
+        working-directory: src-tauri
+        run: cargo test --locked
+      - name: Check native desktop crate
+        run: cargo check --locked --manifest-path native/Cargo.toml
+      - name: Run gateway and MCP contract tests
+        run: node --test tests/**/*.test.mjs

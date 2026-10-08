@@ -1,12 +1,12 @@
-# Node / Vite
+# Optional Node service dependencies
 node_modules/
 dist/
-.vite/
 *.local
 
-# Rust / Tauri
+# Rust core and native desktop build output
 src-tauri/target/
 src-tauri/gen/
+native/target/
 
 # Local runtime data and secrets
 .codex-nexus/

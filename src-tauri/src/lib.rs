@@ -1,7 +1,7 @@
 //! Provider routing and safe artifact handling for the desktop application.
 //!
-//! The crate intentionally has no Tauri dependency.  It can be used from
-//! Tauri commands, a CLI, or a test process without requiring a WebView.
+//! The crate intentionally has no desktop UI dependency. It can be used from
+//! the native Slint host, a CLI, or a test process without requiring a WebView.
 
 pub mod artifacts;
 pub mod discovery;

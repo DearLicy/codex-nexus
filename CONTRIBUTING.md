@@ -4,10 +4,10 @@
 
 ## 开始开发
 
-1. Fork 或克隆仓库，并安装 Node.js 20+、pnpm 9+ 与 Rust stable。
-2. 运行 `pnpm install` 安装依赖。
-3. 使用 `pnpm dev:desktop` 启动 Tauri 桌面开发窗口；只有在专门调试前端时才使用 `pnpm dev` 的 Vite 浏览器预览。
-4. 在提交前运行 `pnpm test` 和 `pnpm build`；若修改 Rust 代码，也运行 `cargo fmt --all -- --check` 与 `cargo check --manifest-path src-tauri/Cargo.toml`。
+1. Fork 或克隆仓库，并安装 Rust stable。只有修改网关或图片 MCP 时才需要 Node.js 20+。
+2. 使用 `cargo run --manifest-path native/Cargo.toml` 启动 Slint 原生桌面应用；`pnpm dev` 是相同命令的快捷方式。
+3. 在提交前运行 `cargo test --manifest-path src-tauri/Cargo.toml`、`cargo check --manifest-path native/Cargo.toml` 和 `node --test tests/**/*.test.mjs`。
+4. 对 Rust 代码运行 `cargo fmt --all -- --check`。
 
 ## 提交变更
 
@@ -15,7 +15,7 @@
 - 新增用户可见行为时，更新 README 或 `docs/` 中对应说明。
 - 不要提交凭据、个人数据、构建产物、`node_modules` 或本机 IDE 配置。
 - 对外部输入、文件路径和网络响应进行校验；错误信息应帮助用户修复问题，但不能泄露秘密。
-- 保持前端与 Tauri 命令的类型和错误语义一致。
+- 保持 Slint 回调、Rust 核心命令和错误语义一致。
 
 ## Pull request
 

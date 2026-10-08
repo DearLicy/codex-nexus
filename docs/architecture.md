@@ -2,19 +2,19 @@
 
 ## Goals
 
-Codex Nexus is a desktop companion with a local-first boundary. The frontend presents state and user actions, the Tauri host owns privileged local capabilities, and integrations are explicit and replaceable. A feature should remain useful with no network connection unless it specifically needs a remote service.
+Codex Nexus is a native desktop companion with a local-first boundary. The Slint window presents state and user actions, the Rust core owns privileged local capabilities, and integrations are explicit and replaceable. A feature should remain useful with no network connection unless it specifically needs a remote service.
 
 ## Runtime layers
 
 ```text
 ┌─────────────────────────────────────────────┐
-│ Frontend (`src/`)                            │
-│ UI, view state, validation, shared types     │
+│ Slint UI (`native/ui/`)                     │
+│ native window, view state, user actions     │
 └──────────────────────┬──────────────────────┘
-                       │ typed Tauri invoke/events
+                       │ typed Rust callbacks
 ┌──────────────────────▼──────────────────────┐
-│ Tauri host (`src-tauri/`)                    │
-│ command boundary, lifecycle, permissions    │
+│ Native host (`native/src/`)                  │
+│ Slint lifecycle, callbacks, platform window  │
 └───────────────┬──────────────────┬───────────┘
                 │                  │
 ┌───────────────▼──────────────┐ ┌─▼───────────┐
@@ -29,13 +29,13 @@ service exposes image operations over MCP stdio and stores returned artifacts
 in the configured local directory. They receive a generated local manifest or
 loopback URL; provider credentials are not hard-coded in either package.
 
-### Frontend
+### Slint UI
 
-`src/` owns rendering, interaction state, and user-facing validation. It should not access native files, process APIs, or credentials directly. Calls into the desktop layer should use the narrow command/event contract exposed by Tauri. Loading, success, and error states should be explicit so a disconnected or partially configured integration is understandable.
+`native/ui/` owns rendering, interaction state, and user-facing validation. It should not access native files, process APIs, or credentials directly. Calls into the desktop layer use narrow typed Slint callbacks. Loading, success, and error states should be explicit so a disconnected or partially configured integration is understandable.
 
-### Tauri and Rust
+### Native host and Rust core
 
-`src-tauri/` is the trust boundary for local capabilities. Commands should accept validated, serializable input and return typed results or safe, user-actionable errors. Keep command handlers small; put filesystem, process, persistence, and integration work in testable Rust modules. Do not log tokens, cookies, full request bodies, or private file contents.
+`native/src/` is the desktop host and `src-tauri/` is the reusable Rust core. Callbacks should accept validated input and return typed results or safe, user-actionable errors. Keep the host layer small; put filesystem, process, persistence, and integration work in testable Rust modules. Do not log tokens, cookies, full request bodies, or private file contents.
 
 ### State and persistence
 
@@ -47,25 +47,25 @@ Network integrations are optional adapters behind a small interface. They must d
 
 ## Data flow
 
-1. The frontend validates the user action and invokes one narrow command.
-2. The Tauri command validates again at the trust boundary and selects a local service or integration adapter.
+1. The Slint UI validates the user action and invokes one narrow callback.
+2. The native host validates again at the trust boundary and selects a local service or integration adapter.
 3. The service reads local state or performs an explicitly requested request.
-4. The command returns a serializable result or a categorized error.
-5. The frontend updates its view state and presents the outcome without exposing internal paths or secrets.
+4. The Rust function returns a typed result or a categorized error.
+5. The Slint UI updates its view state and presents the outcome without exposing internal paths or secrets.
 
 Events are for state changes that may occur outside a single request (for example, a background refresh). They should be scoped, cancellable where possible, and de-duplicated before reaching the UI.
 
 ## Security boundaries
 
-- Treat frontend input, imported files, and remote responses as untrusted.
-- Keep native commands allowlisted and minimize filesystem scope.
+- Treat Slint UI input, imported files, and remote responses as untrusted.
+- Keep native callbacks allowlisted and minimize filesystem scope.
 - Store credentials in the system keychain; redact values before logging.
 - Use HTTPS for remote integrations and fail closed on certificate or origin errors.
 - Do not silently upload local workspace content.
 
 ## Build and release
 
-The frontend is built with the package manager scripts defined in `package.json`; Tauri bundles the generated assets into platform installers. CI runs frontend checks and Rust formatting/checks independently so a failure identifies its layer. Release automation should pin toolchain versions, generate reproducible artifacts where supported, and publish checksums alongside installers.
+The native application is built with the Rust manifests in `native/` and `src-tauri/`; Slint compiles the UI into the desktop binary. CI runs the Rust core and native host checks independently so a failure identifies its layer. Release automation should pin toolchain versions, generate reproducible artifacts where supported, and publish checksums alongside installers.
 
 ## Current core modules
 
@@ -92,4 +92,4 @@ returning MCP image content for inline display. Account qualification and
 provider capability flags remain hard requirements; the fallback does not
 grant image access to an account that lacks it.
 
-The Tauri command layer can expose these modules later without coupling their domain logic to a WebView or a particular frontend framework.
+The native host exposes these modules through typed Slint callbacks without coupling their domain logic to a WebView or browser framework.
